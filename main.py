@@ -29,29 +29,18 @@ deepseek_client = OpenAI(
 
 supabase = create_client(url, key)
 
-# model = None
-
-# def get_model():
-#     global model
-#     if model is None:
-#         print(" Loading embedding model...")
-#         model = SentenceTransformer('all-MiniLM-L6-v2')
-#     return model
-
 
 bbc = "https://www.bbc.com/"
 
-# Hf_token = os.getenv("Hf_token")
-
-# print(Hf_token)
-
-# url = "https://router.huggingface.co/v1/chat/completions"
 
 
-# headers = {
-#         "Authorization": f"Bearer {Hf_token}",
-#         "Content-Type": "application/json"
-#     }
+
+async def clear_news_table():
+    try:
+        supabase.table("news").delete().neq("id", 0).execute()
+        print("🧹 News table cleared")
+    except Exception as e:
+        print("Cleanup failed:", e)
 
 
 async def optimise_tittle(tittle: str):
@@ -380,6 +369,9 @@ async def get_data_via_api():
 # bbc = "https://www.bbc.com/"
 
 async def cycle():
+    print("🧹 Clearing old data...")
+    await clear_news_table()
+
     print("🚀 Running API fetch...")
     await get_data_via_api()
 
@@ -392,7 +384,6 @@ async def cycle():
         id=False
     )
 
-
 async def main():
     while True:
         try:
@@ -402,8 +393,7 @@ async def main():
         except Exception as e:
             print("❌ Cycle error:", e)
 
-        await asyncio.sleep(3600) 
-
+        await asyncio.sleep(12 * 60 * 60)
 
 if __name__ == "__main__":
     asyncio.run(main())
