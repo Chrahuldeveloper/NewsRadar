@@ -33,16 +33,15 @@ supabase = create_client(url, key)
 bbc = "https://www.bbc.com/"
 
 
-
-
-async def clear_news_table():
+async def clear_all_tables():
     try:
-        supabase.table("news").delete().neq("id", 0).execute()
-        print("🧹 News table cleared")
+        supabase.table("news").delete().neq("tittle", "").execute()
+        supabase.table("content_radar").delete().neq("tittle", "").execute()
+        print("🧹 All tables cleared")
     except Exception as e:
         print("Cleanup failed:", e)
 
-
+        
 async def optimise_tittle(tittle: str):
     prompt = f"""
 You are a NEWS TOPIC TAG generator.
@@ -370,8 +369,8 @@ async def get_data_via_api():
 
 async def cycle():
     print("🧹 Clearing old data...")
-    await clear_news_table()
 
+    await clear_all_tables()   
     print("🚀 Running API fetch...")
     await get_data_via_api()
 
