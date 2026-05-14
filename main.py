@@ -28,7 +28,7 @@ bbc = "https://www.bbc.com/"
 # ---------------- CLEAR TABLES ----------------
 async def clear_all_tables():
     try:
-        supabase.table("news").delete().neq("tittle", "").execute()
+        supabase.table("content_radar_news_scrape").delete().neq("tittle", "").execute()
         supabase.table("content_radar").delete().neq("tittle", "").execute()
         print("🧹 Tables cleared")
     except Exception as e:
@@ -150,7 +150,7 @@ async def scrape():
 
             article = {"tittle": text}
 
-            supabase.table("news").upsert(
+            supabase.table("content_radar_news_scrape").upsert(
                 article,
                 on_conflict="tittle"
             ).execute()
@@ -194,7 +194,7 @@ async def get_data_via_api():
 
     for article in articles:
         try:
-            supabase.table("news").upsert(
+            supabase.table("content_radar_news_scrape").upsert(
                 article,
                 on_conflict="tittle"
             ).execute()
