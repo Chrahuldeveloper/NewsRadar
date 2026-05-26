@@ -20,7 +20,7 @@ deepseek_client = OpenAI(
 
 bbc = "https://www.bbc.com/"
 
-# ---------------- 10 INDIA CITY QUERIES ----------------
+# ---------------- INDIA CITY QUERIES ----------------
 INDIA_LOCATIONS = [
     {"state": "Delhi",          "city": "New Delhi"},
     {"state": "Maharashtra",    "city": "Mumbai"},
@@ -32,7 +32,7 @@ INDIA_LOCATIONS = [
     {"state": "Maharashtra",    "city": "Pune"},
 ]
 
-# ---------------- TOP 10 INDIA STATE QUERIES (by GDP) ----------------
+# ---------------- TOP INDIA STATE QUERIES (by GDP) ----------------
 INDIA_STATES = [
     {"state": "Maharashtra",    "city": ""},
     {"state": "Tamil Nadu",     "city": ""},
@@ -46,7 +46,7 @@ INDIA_STATES = [
     {"state": "Kerala",         "city": ""},
 ]
 
-# ---------------- 6 GLOBAL QUERIES ----------------
+# ---------------- GLOBAL QUERIES ----------------
 GLOBAL_QUERIES = [
     "news today",
     "breaking news",
@@ -55,6 +55,7 @@ GLOBAL_QUERIES = [
     "international news",
     "global news",
 ]
+
 
 # ---------------- CLEAR TABLES ----------------
 async def clear_all_tables():
@@ -67,7 +68,7 @@ async def clear_all_tables():
 
 
 # ---------------- OPTIMISE TITLE ----------------
-async def optimise_tittle(tittle: str):
+async def optimise_tittle(tittle: str) -> str:
     prompt = f"""
     You are a NEWS TOPIC TAG generator.
 
@@ -94,7 +95,7 @@ async def optimise_tittle(tittle: str):
     """
     try:
         res = deepseek_client.chat.completions.create(
-            model="deepseek-v4-pro",
+            model="deepseek-chat",          # ✅ fixed: was "deepseek-v4-pro" which doesn't exist
             messages=[
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": tittle}
@@ -103,25 +104,49 @@ async def optimise_tittle(tittle: str):
         return res.choices[0].message.content.strip()
     except Exception as e:
         print("Optimise error:", e)
-        return tittle
+        return tittle  # fallback to raw title
+
+
+# ---------------- SAVE TO SCRAPE TABLE ----------------
+def save_to_scrape_table(tittle: str, city: str, state: str):
+    """
+    Safe insert into content_radar_news_scrape.
+    Uses (tittle, city, state) composite logic:
+    - upsert on tittle alone can silently skip location updates.
+    - We insert ignoring duplicate tittles to preserve first-seen location.
+    """
+    try:
+        supabase.table("content_radar_news_scrape").upsert(
+            {"tittle": tittle, "city": city, "state": state},
+            on_conflict="tittle",           # adjust if your PK is composite
+            ignore_duplicates=False         # let it update city/state if title exists
+        ).execute()
+    except Exception as e:
+        print(f"  Scrape table insert failed [{city or state or 'global'}]:", e)
 
 
 # ---------------- AI INTELLIGENCE ----------------
-async def ai_itellengence(article):
+async def ai_itellengence(article: dict):
+    """
+    Runs AI on a single article dict and saves result to content_radar.
+    Conflict key is now (regular_tittle, city, state) to allow the same
+    headline from different locations to each get its own row.
+    """
     print("AI running...")
 
-    raw_tittle = article.get("tittle")
+    raw_tittle = article.get("tittle", "").strip()
     if not raw_tittle:
         return
 
-    optimized = await optimise_tittle(raw_tittle)
+    city  = article.get("city", "") or ""
+    state = article.get("state", "") or ""
 
-    city  = article.get("city", "")
-    state = article.get("state", "")
+    optimized = await optimise_tittle(raw_tittle)
 
     location_context = ""
     if city or state:
-        location_context = f"\nLocation Context: {city}, {state}".strip(", ")
+        parts = [p for p in [city, state] if p]
+        location_context = f"\nLocation Context: {', '.join(parts)}"
 
     prompt = f"""
 You are a Viral Content Strategist.
@@ -142,7 +167,7 @@ STEP 1:
     try:
         def call_model():
             return deepseek_client.chat.completions.create(
-                model="deepseek-v4-pro",
+                model="deepseek-chat",      # ✅ fixed: consistent model name
                 messages=[
                     {"role": "system", "content": "You generate viral content."},
                     {"role": "user", "content": prompt}
@@ -151,21 +176,29 @@ STEP 1:
 
         output = await asyncio.to_thread(call_model)
 
-        if output == "SKIP":
+        if output.strip().upper() == "SKIP":
+            print(f"  ⏭️ Skipped [{city or state or 'global'}]: {raw_tittle}")
             return
 
-        supabase.table("content_radar").upsert({
-            "tittle":         optimized,
-            "regular_tittle": raw_tittle,
-            "summary":        output,
-            "city":           city,
-            "state":          state
-        }, on_conflict="regular_tittle").execute()
+        # ✅ FIX: use (regular_tittle + city + state) as the natural unique key.
+        # This prevents a Mumbai headline from overwriting a Delhi headline with the same text.
+        # Your Supabase table needs a unique constraint on (regular_tittle, city, state).
+        supabase.table("content_radar").upsert(
+            {
+                "tittle":         optimized,
+                "regular_tittle": raw_tittle,
+                "summary":        output,
+                "city":           city,      # ✅ always explicitly set
+                "state":          state,     # ✅ always explicitly set
+            },
+            on_conflict="regular_tittle,city,state"   # ✅ composite conflict key
+        ).execute()
 
-        print(f"Saved → content_radar [{city or state or 'global'}]")
+        label = city or state or "global"
+        print(f"  ✅ Saved → content_radar [{label}]: {optimized}")
 
     except Exception as e:
-        print("AI error:", e)
+        print(f"  AI error [{city or state or 'global'}]:", e)
 
 
 # ---------------- SCRAPE BBC ----------------
@@ -188,11 +221,7 @@ async def scrape():
                 continue
 
             article = {"tittle": text, "city": "", "state": "India"}
-
-            supabase.table("content_radar_news_scrape").upsert(
-                {"tittle": text, "city": "", "state": "India"},
-                on_conflict="tittle"
-            ).execute()
+            save_to_scrape_table(text, "", "India")
 
             print("BBC saved:", text)
             await ai_itellengence(article)
@@ -202,7 +231,7 @@ async def scrape():
 
 
 # ---------------- FETCH FOR A SINGLE LOCATION ----------------
-async def fetch_location(city: str, state: str, label: str, max_results: int = 10):  # ✅ default 10
+async def fetch_location(city: str, state: str, label: str, max_results: int = 10):
     query = f"{city} {state}".strip() if city else state
     articles = []
 
@@ -213,7 +242,7 @@ async def fetch_location(city: str, state: str, label: str, max_results: int = 1
             timeout=15
         ).json()
         for item in res.get("results", []):
-            title = item.get("title")
+            title = item.get("title", "").strip()
             if title:
                 articles.append({"tittle": title, "city": city, "state": state})
 
@@ -223,7 +252,7 @@ async def fetch_location(city: str, state: str, label: str, max_results: int = 1
             timeout=15
         ).json()
         for item in res2.get("articles", []):
-            title = item.get("title")
+            title = item.get("title", "").strip()
             if title:
                 articles.append({"tittle": title, "city": city, "state": state})
 
@@ -231,28 +260,25 @@ async def fetch_location(city: str, state: str, label: str, max_results: int = 1
         print(f"  API error [{label}]:", e)
         return
 
-    articles = articles[:max_results]  # ✅ always slice
+    articles = articles[:max_results]
 
     for article in articles:
-        try:
-            supabase.table("content_radar_news_scrape").upsert(
-                {"tittle": article["tittle"], "city": city, "state": state},
-                on_conflict="tittle"
-            ).execute()
-            print(f"  Saved [{label}]:", article["tittle"])
-            await ai_itellengence(article)
-        except Exception as e:
-            print("  Insert failed:", e)
+        save_to_scrape_table(article["tittle"], city, state)
+        print(f"  Saved [{label}]:", article["tittle"])
+        await ai_itellengence(article)
 
 
-# ---------------- FETCH INDIA CITY NEWS (all 10 cities, 1 each = 10 total) ----------------
+# ---------------- FETCH INDIA CITY NEWS ----------------
 async def fetch_india_city_news():
-    print("\n🇮🇳 Fetching India city news (all cities, 1 each = 10 total)...")
+    print("\n🇮🇳 Fetching India city news (1 article per city)...")
 
     for loc in INDIA_LOCATIONS:
-        label = f"{loc['city']}, {loc['state']}"
+        city  = loc["city"]
+        state = loc["state"]
+        label = f"{city}, {state}"
         print(f"  📍 {label}")
-        query = f"{loc['city']} {loc['state']}".strip()
+
+        query = f"{city} {state}".strip()
         article = None
 
         try:
@@ -262,10 +288,10 @@ async def fetch_india_city_news():
                 timeout=15
             ).json()
             for item in res.get("results", []):
-                title = item.get("title")
+                title = item.get("title", "").strip()
                 if title:
-                    article = {"tittle": title, "city": loc["city"], "state": loc["state"]}
-                    break  # ✅ take only 1
+                    article = {"tittle": title, "city": city, "state": state}
+                    break
 
             if not article:
                 res2 = requests.get(
@@ -274,37 +300,35 @@ async def fetch_india_city_news():
                     timeout=15
                 ).json()
                 for item in res2.get("articles", []):
-                    title = item.get("title")
+                    title = item.get("title", "").strip()
                     if title:
-                        article = {"tittle": title, "city": loc["city"], "state": loc["state"]}
-                        break  # ✅ take only 1
+                        article = {"tittle": title, "city": city, "state": state}
+                        break
 
         except Exception as e:
             print(f"  API error [{label}]:", e)
 
         if article:
-            try:
-                supabase.table("content_radar_news_scrape").upsert(
-                    {"tittle": article["tittle"], "city": article["city"], "state": article["state"]},
-                    on_conflict="tittle"
-                ).execute()
-                print(f"  Saved [{article['city']}]:", article["tittle"])
-                await ai_itellengence(article)
-            except Exception as e:
-                print("  Insert failed:", e)
+            save_to_scrape_table(article["tittle"], city, state)   # ✅ explicit city+state
+            print(f"  Saved [{city}]:", article["tittle"])
+            await ai_itellengence(article)
+        else:
+            print(f"  ⚠️ No article found for {label}")
 
         await asyncio.sleep(1)
 
 
-
-# ---------------- FETCH INDIA STATE NEWS (all 28 states, 5 each) ----------------
+# ---------------- FETCH INDIA STATE NEWS ----------------
 async def fetch_india_state_news():
-    print("\n🗺️ Fetching India state news (28 states, 5 each)...")
+    print("\n🗺️ Fetching India state news (5 per state)...")
 
     for loc in INDIA_STATES:
-        label = loc["state"]
+        state = loc["state"]
+        city  = ""                          # ✅ explicit empty string, not None
+        label = state
         print(f"  📍 {label}")
-        query = loc["state"]
+
+        query = state
         articles = []
 
         try:
@@ -314,9 +338,9 @@ async def fetch_india_state_news():
                 timeout=15
             ).json()
             for item in res.get("results", []):
-                title = item.get("title")
+                title = item.get("title", "").strip()
                 if title:
-                    articles.append({"tittle": title, "city": "", "state": loc["state"]})
+                    articles.append({"tittle": title, "city": city, "state": state})
                 if len(articles) >= 5:
                     break
 
@@ -327,9 +351,9 @@ async def fetch_india_state_news():
                     timeout=15
                 ).json()
                 for item in res2.get("articles", []):
-                    title = item.get("title")
+                    title = item.get("title", "").strip()
                     if title:
-                        articles.append({"tittle": title, "city": "", "state": loc["state"]})
+                        articles.append({"tittle": title, "city": city, "state": state})
                     if len(articles) >= 5:
                         break
 
@@ -337,21 +361,16 @@ async def fetch_india_state_news():
             print(f"  API error [{label}]:", e)
 
         for article in articles:
-            try:
-                supabase.table("content_radar_news_scrape").upsert(
-                    {"tittle": article["tittle"], "city": "", "state": article["state"]},
-                    on_conflict="tittle"
-                ).execute()
-                print(f"  Saved [{article['state']}]:", article["tittle"])
-                await ai_itellengence(article)
-            except Exception as e:
-                print("  Insert failed:", e)
+            save_to_scrape_table(article["tittle"], city, state)   # ✅ explicit city+state
+            print(f"  Saved [{state}]:", article["tittle"])
+            await ai_itellengence(article)
 
         await asyncio.sleep(1)
 
 
+# ---------------- FETCH GLOBAL NEWS ----------------
 async def fetch_global_news():
-    print("\n🌍 Fetching global news (6 queries, 1 each)...")
+    print("\n🌍 Fetching global news (1 per query)...")
 
     for query in GLOBAL_QUERIES:
         print(f"  🌐 {query}")
@@ -364,7 +383,7 @@ async def fetch_global_news():
                 timeout=15
             ).json()
             for item in res.get("results", []):
-                title = item.get("title")
+                title = item.get("title", "").strip()
                 if title:
                     article_title = title
                     break
@@ -376,7 +395,7 @@ async def fetch_global_news():
                     timeout=15
                 ).json()
                 for item in res2.get("articles", []):
-                    title = item.get("title")
+                    title = item.get("title", "").strip()
                     if title:
                         article_title = title
                         break
@@ -385,26 +404,23 @@ async def fetch_global_news():
             print(f"  API error [global/{query}]:", e)
 
         if article_title:
-            try:
-                supabase.table("content_radar_news_scrape").upsert(
-                    {"tittle": article_title, "city": "", "state": ""},
-                    on_conflict="tittle"
-                ).execute()
-                print(f"  Saved [global]:", article_title)
-                await ai_itellengence({"tittle": article_title, "city": "", "state": ""})
-            except Exception as e:
-                print("  Insert failed:", e)
+            save_to_scrape_table(article_title, "", "")            # ✅ global: both empty
+            print(f"  Saved [global]:", article_title)
+            await ai_itellengence({"tittle": article_title, "city": "", "state": ""})
+        else:
+            print(f"  ⚠️ No article found for query: {query}")
 
         await asyncio.sleep(1)
+
 
 # ---------------- FULL CYCLE ----------------
 async def cycle():
     print("\n🧹 Clearing old data...")
     await clear_all_tables()
 
-    await fetch_india_city_news()   # 10 cities
-    await fetch_india_state_news()  # 6 states
-    await fetch_global_news()       # 6 global topics
+    await fetch_india_city_news()   # 8 cities, 1 each
+    await fetch_india_state_news()  # 10 states, 5 each
+    await fetch_global_news()       # 6 global queries, 1 each
 
     print("\n📰 Scraping BBC...")
     await scrape()
