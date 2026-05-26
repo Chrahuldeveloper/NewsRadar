@@ -220,8 +220,8 @@ async def scrape():
             if not text or len(text) < 5:
                 continue
 
-            article = {"tittle": text, "city": "", "state": "India"}
-            save_to_scrape_table(text, "", "India")
+            article = {"tittle": text, "city": "India", "state": "India"}
+            save_to_scrape_table(text, "India", "India")
 
             print("BBC saved:", text)
             await ai_itellengence(article)
@@ -324,7 +324,7 @@ async def fetch_india_state_news():
 
     for loc in INDIA_STATES:
         state = loc["state"]
-        city  = ""                          # ✅ explicit empty string, not None
+        city  = state                         # ✅ explicit empty string, not None
         label = state
         print(f"  📍 {label}")
 
@@ -404,9 +404,9 @@ async def fetch_global_news():
             print(f"  API error [global/{query}]:", e)
 
         if article_title:
-            save_to_scrape_table(article_title, "", "")            # ✅ global: both empty
+            save_to_scrape_table(article_title, "global", "global")
             print(f"  Saved [global]:", article_title)
-            await ai_itellengence({"tittle": article_title, "city": "", "state": ""})
+            await ai_itellengence({"tittle": article_title, "city": "global", "state": "global"})
         else:
             print(f"  ⚠️ No article found for query: {query}")
 
