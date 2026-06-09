@@ -1,0 +1,77 @@
+State,Source,URL,Selector
+Andhra Pradesh,Sakshi,https://www.sakshi.com,h2 a
+Andhra Pradesh,Andhra Jyothy,https://www.andhrajyothy.com,div.abn_title h3
+Andhra Pradesh,TV9 Telugu,https://tv9telugu.com,div.card_title h3
+Telangana,Namasthe Telangana,https://www.ntnews.com,figcaption h3 a
+Telangana,Siasat,https://www.siasat.com/news/telangana/,div.post-details h2.post-title a
+Tamil Nadu,Daily Thanthi,https://www.dailythanthi.com/news/tamilnadu,div.arrow-component.arr--headline h3
+Tamil Nadu,Dinamalar,https://www.dinamalar.com/news/tamil-nadu-news,a p
+Tamil Nadu,Thanthi TV,https://www.thanthitv.com,div.arrow-component.arr--headline h3
+Karnataka,Prajavani,https://www.prajavani.net,div.headline-wrapper h2.headline
+Karnataka,Udayavani,https://www.udayavani.com,h3.card_body_para
+Karnataka,Kannada Prabha,https://www.kannadaprabha.com,h3.headline-m_headline__3_NhV 
+Karnataka,TV9 Kannada,https://tv9kannada.com,div.card_title h3.h3
+Karnataka,Public TV,https://publictv.in/category/news/,h3.entry-title a.p-url
+Kerala,Malayala Manorama,https://www.manoramaonline.com,div h3
+Kerala,Mathrubhumi,https://www.mathrubhumi.com,h2.teaser-head-text
+Kerala,Asianet News,https://www.asianetnews.com,figcaption
+Kerala,Janam TV,https://janamtv.com,h3.jeg_post_title a
+Maharashtra,Lokmat,https://www.lokmat.com,h2 a[href]
+Maharashtra,Maharashtra Times,https://maharashtratimes.com,h3 span[data-tb-title]
+Maharashtra,Sakal,https://www.esakal.com,div.arrow-component.arr--headline h3
+Maharashtra,Saam TV,https://saamtv.esakal.com,h3.headline-m_headline__3_NhV
+
+
+Gujarat,Divya Bhaskar,https://www.divyabhaskar.co.in,h3
+Rajasthan,patrika,https://www.patrika.com,h3
+Rajasthan,Dainik Bhaskar Rajasthan,https://www.bhaskar.com/local/rajasthan,div[class] h3
+Punjab,Ajit,https://www.ajitjalandhar.com,div.card-body h5.card-title
+Punjab,Jagbani,https://jagbani.punjabkesari.in,h3[itemprop='url'] a
+
+Haryana,Dainik Jagran Haryana,https://www.jagran.com/haryana,a
+Haryana,Dainik Bhaskar Haryana,https://www.bhaskar.com/local/haryana,a h3
+
+Delhi NCR,Times of India Delhi,https://timesofindia.indiatimes.com/city/delhi,a span
+Delhi NCR,Indian Express Delhi,https://indianexpress.com/section/cities/delhi,li a
+Uttar Pradesh,Dainik Jagran,https://www.jagran.com/uttar-pradesh,h3 a
+Uttar Pradesh,Amar Ujala,https://www.amarujala.com/uttar-pradesh,h2 a
+Uttar Pradesh,Hindustan,https://www.livehindustan.com/uttar-pradesh,"h2 a, h3 a"
+Bihar,Hindustan Bihar,https://www.livehindustan.com/bihar,"h2 a, h3 a"
+Bihar,Prabhat Khabar,https://www.prabhatkhabar.com,"h2 a, h3 a"
+Bihar,Dainik Jagran Bihar,https://www.jagran.com/bihar,"h2 a, h3 a"
+Bihar,First Bihar,https://firstbihar.com,"h2 a, h3 a, a"
+Jharkhand,Prabhat Khabar,https://www.prabhatkhabar.com,"h2 a, h3 a"
+Jharkhand,Dainik Jagran Jharkhand,https://www.jagran.com/jharkhand,"h2 a, h3 a"
+Jharkhand,Hindustan Jharkhand,https://www.livehindustan.com/jharkhand,"h2 a, h3 a"
+West Bengal,Bartaman,https://bartamanpatrika.com,"h2 a, h3 a"
+West Bengal,TV9 Bangla,https://tv9bangla.com,"h2 a, h3 a"
+Odisha,Sambad,https://sambad.in,"h2 a, h3 a"
+Odisha,Dharitri,https://www.dharitri.com,"h2 a, h3 a"
+Odisha,Kanak News,https://kanaknews.com,"h2 a, h3 a"
+Odisha,Nandighosha TV,https://nandighoshatv.com,"h2 a, h3 a"
+Chhattisgarh,Nai Dunia,https://www.naidunia.com,"h2 a, h3 a"
+Chhattisgarh,Swaraj Express,https://swarajtoday.com,"h2 a, h3 a"
+Madhya Pradesh,Swaraj Express,https://swarajtoday.com,"h2 a, h3 a"
+Madhya Pradesh,Nai Dunia,https://www.naidunia.com,"h2 a, h3 a"
+Assam,Assam Tribune,https://assamtribune.com,"h2 a, h3 a"
+Assam,DY365,https://dy365.in,"h2 a, h3 a"
+Assam,Niyomiya Barta,https://niyomiyabarta.com,"h2 a, h3 a"
+North East Region,Arunachal Times,https://arunachaltimes.in,"h2 a, h3 a"
+North East Region,Northeast Today,https://www.northeasttoday.in,"h2 a, h3 a"
+North East Region,EastMojo,https://www.eastmojo.com,"h2 a, h3 a"
+
+
+
+
+Jammu & Kashmir,Greater Kashmir,https://www.greaterkashmir.com,"h2 a, h3 a"
+Jammu & Kashmir,Daily Excelsior,https://www.dailyexcelsior.com,"h2 a, h3 a"
+Jammu & Kashmir,Kashmir Observer,https://kashmirobserver.net,"h2 a, h3 a"
+Jammu & Kashmir,Rising Kashmir,https://risingkashmir.com,"h2 a, h3 a"
+
+Uttarakhand,Amar Ujala Uttarakhand,https://www.amarujala.com/uttarakhand,"h2 a, h3 a"
+Uttarakhand,Dainik Jagran Uttarakhand,https://www.jagran.com/uttarakhand,"h2 a, h3 a"
+Uttarakhand,Hindustan Uttarakhand,https://www.livehindustan.com/uttarakhand,"h2 a, h3 a"
+
+
+Goa,Herald Goa,https://www.heraldgoa.in,"h2 a, h3 a"
+Goa,Navhind Times,https://www.navhindtimes.in,"h2 a, h3 a"

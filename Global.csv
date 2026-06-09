@@ -1,0 +1,31 @@
+Region,Country,Political Capitals,Financial Hubs,Technology/Industry Hubs,Sports/Media/Strategic Cities
+North America,United States,Washington DC,New York City,San Francisco; San Jose; Seattle; Austin; Houston,Los Angeles; Chicago; Boston; Miami; Atlanta; San Diego; Norfolk
+North America,Canada,Ottawa,Toronto,Montreal; Calgary; Edmonton,Vancouver
+North America,Mexico,Mexico City,Monterrey,Guadalajara,Tijuana
+Europe,United Kingdom,London,London,Manchester; Birmingham,Liverpool; Edinburgh; Glasgow
+Europe,Germany,Berlin,Frankfurt,Munich; Stuttgart; Cologne; Dusseldorf,Hamburg
+Europe,France,Paris,Paris,Lyon; Toulouse,Marseille; Nice
+Europe,Italy,Rome,Milan,Turin,Naples
+Europe,Spain,Madrid,Madrid,Barcelona; Valencia,Seville
+Europe,Netherlands,Amsterdam; The Hague,Amsterdam,Rotterdam,Eindhoven
+Europe,Poland,Warsaw,Warsaw,Krakow; Wroclaw,Gdansk
+Europe,Russia,Moscow,Moscow,Kazan; Yekaterinburg; Novosibirsk,Saint Petersburg; Tyumen
+East Asia,China,Beijing,Shanghai; Hong Kong,Shenzhen; Guangzhou; Chengdu; Chongqing; Wuhan; Hangzhou,Tianjin; Xi'an
+East Asia,Japan,Tokyo,Tokyo,Osaka; Nagoya; Yokohama,Kyoto; Sapporo; Fukuoka
+East Asia,South Korea,Seoul,Seoul,Incheon; Daegu,Busan
+East Asia,Taiwan,Taipei,Taipei,Taichung,Kaohsiung
+South Asia,Pakistan,Islamabad,Karachi,Lahore,Rawalpindi
+South Asia,Bangladesh,Dhaka,Dhaka,Chattogram,Khulna
+South Asia,Sri Lanka,Colombo,Colombo,Kandy,Galle
+Middle East,Saudi Arabia,Riyadh,Riyadh,Dammam,Jeddah; Mecca; Medina; NEOM
+Middle East,UAE,Abu Dhabi,Dubai,Sharjah,Ras Al Khaimah
+Middle East,Israel,Jerusalem,Tel Aviv,Haifa,Beersheba
+Middle East,Iran,Tehran,Tehran,Isfahan; Tabriz,Mashhad; Shiraz
+Middle East,Turkey,Ankara,Istanbul,Izmir; Bursa,Antalya
+Africa,South Africa,Pretoria,Johannesburg,Durban,Cape Town
+Africa,Nigeria,Abuja,Lagos,Kano,Port Harcourt
+Africa,Egypt,Cairo,Cairo,Alexandria,Giza
+Africa,Kenya,Nairobi,Nairobi,Mombasa,Kisumu
+Africa,Ethiopia,Addis Ababa,Addis Ababa,,
+Oceania,Australia,Canberra,Sydney,Melbourne; Brisbane; Perth,Adelaide
+Oceania,New Zealand,Wellington,Auckland,Christchurch,Hamilton
