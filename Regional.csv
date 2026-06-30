@@ -1,5 +1,4 @@
 State,Source,URL,Selector
-Andhra Pradesh,Sakshi,https://www.sakshi.com,h2 a
 Andhra Pradesh,Andhra Jyothy,https://www.andhrajyothy.com,div.abn_title h3
 Andhra Pradesh,TV9 Telugu,https://tv9telugu.com,div.card_title h3
 Telangana,Namasthe Telangana,https://www.ntnews.com,figcaption h3 a
@@ -20,17 +19,13 @@ Maharashtra,Lokmat,https://www.lokmat.com,h2 a[href]
 Maharashtra,Maharashtra Times,https://maharashtratimes.com,h3 span[data-tb-title]
 Maharashtra,Sakal,https://www.esakal.com,div.arrow-component.arr--headline h3
 Maharashtra,Saam TV,https://saamtv.esakal.com,h3.headline-m_headline__3_NhV
-
-
 Gujarat,Divya Bhaskar,https://www.divyabhaskar.co.in,h3
 Rajasthan,patrika,https://www.patrika.com,h3
 Rajasthan,Dainik Bhaskar Rajasthan,https://www.bhaskar.com/local/rajasthan,div[class] h3
 Punjab,Ajit,https://www.ajitjalandhar.com,div.card-body h5.card-title
 Punjab,Jagbani,https://jagbani.punjabkesari.in,h3[itemprop='url'] a
-
 Haryana,Dainik Jagran Haryana,https://www.jagran.com/haryana,a
 Haryana,Dainik Bhaskar Haryana,https://www.bhaskar.com/local/haryana,a h3
-
 Delhi NCR,Times of India Delhi,https://timesofindia.indiatimes.com/city/delhi,a span
 Delhi NCR,Indian Express Delhi,https://indianexpress.com/section/cities/delhi,li a
 Uttar Pradesh,Dainik Jagran,https://www.jagran.com/uttar-pradesh,h3 a
@@ -59,19 +54,12 @@ Assam,Niyomiya Barta,https://niyomiyabarta.com,"h2 a, h3 a"
 North East Region,Arunachal Times,https://arunachaltimes.in,"h2 a, h3 a"
 North East Region,Northeast Today,https://www.northeasttoday.in,"h2 a, h3 a"
 North East Region,EastMojo,https://www.eastmojo.com,"h2 a, h3 a"
-
-
-
-
 Jammu & Kashmir,Greater Kashmir,https://www.greaterkashmir.com,"h2 a, h3 a"
 Jammu & Kashmir,Daily Excelsior,https://www.dailyexcelsior.com,"h2 a, h3 a"
 Jammu & Kashmir,Kashmir Observer,https://kashmirobserver.net,"h2 a, h3 a"
 Jammu & Kashmir,Rising Kashmir,https://risingkashmir.com,"h2 a, h3 a"
-
 Uttarakhand,Amar Ujala Uttarakhand,https://www.amarujala.com/uttarakhand,"h2 a, h3 a"
 Uttarakhand,Dainik Jagran Uttarakhand,https://www.jagran.com/uttarakhand,"h2 a, h3 a"
 Uttarakhand,Hindustan Uttarakhand,https://www.livehindustan.com/uttarakhand,"h2 a, h3 a"
-
-
 Goa,Herald Goa,https://www.heraldgoa.in,"h2 a, h3 a"
 Goa,Navhind Times,https://www.navhindtimes.in,"h2 a, h3 a"

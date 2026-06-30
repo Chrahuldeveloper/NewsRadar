@@ -8,6 +8,8 @@ pandas
 lxml
 python-dotenv
 openai
-sentence-transformers
 deep-translator
 langdetect
+
+
+# Andhra Pradesh,Sakshi,https://www.sakshi.com,h2 news_title
