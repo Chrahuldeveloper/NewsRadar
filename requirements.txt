@@ -13,3 +13,4 @@ langdetect
 feedparser
 schedule
 pandas
+scikit-learn
