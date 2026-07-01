@@ -12,9 +12,11 @@ import feedparser
 import json
 from datetime import datetime, timedelta
 import re
+import shutil
 
 from openai import OpenAI
 from supabase import create_client
+import schedule  # pip install schedule
 
 load_dotenv()
 
@@ -93,6 +95,69 @@ NATIONAL_RSS_FEEDS = {
     "NewsLaundry":       "https://www.newslaundry.com/feed",
     "The Wire":          "https://thewire.in/feed",
 }
+
+# ════════════════════════════════════════════════════════════════════════════
+# CLEANUP HELPERS (NEW)
+# ════════════════════════════════════════════════════════════════════════════
+
+def clear_output_directory():
+    """
+    Delete every file (and any subfolder) inside OUTPUT_DIR so each nightly
+    run starts from a clean slate and re-fetches everything instead of
+    hitting the 'file already exists, skip' shortcuts in run().
+    """
+    if not OUTPUT_DIR.exists():
+        OUTPUT_DIR.mkdir(exist_ok=True)
+        return
+
+    deleted = 0
+    for item in OUTPUT_DIR.iterdir():
+        try:
+            if item.is_file() or item.is_symlink():
+                item.unlink()
+                deleted += 1
+            elif item.is_dir():
+                shutil.rmtree(item)
+                deleted += 1
+        except Exception as e:
+            print(f"   ⚠️  Could not delete {item}: {e}")
+
+    print(f"🧹 Cleared {deleted} item(s) from '{OUTPUT_DIR}'")
+
+
+def is_table_empty() -> bool:
+    """
+    Returns True if content_radar currently has 0 rows (e.g. first-ever run,
+    or the table was manually cleared). Uses a count-only query so it doesn't
+    pull any actual row data.
+    """
+    try:
+        res = supabase.table(TABLE_NAME).select("id", count="exact").limit(1).execute()
+        count = res.count if res.count is not None else len(res.data)
+        return count == 0
+    except Exception as e:
+        print(f"⚠️  Could not check if '{TABLE_NAME}' is empty ({e}) — assuming NOT empty")
+        return False
+
+
+def clear_supabase_table():
+    """
+    Delete every row from the content_radar table before pushing fresh data,
+    so each night's run fully replaces the previous night's content instead
+    of accumulating.
+
+    NOTE: Supabase's Python client requires a filter on .delete(), it won't
+    let you delete with no condition at all. `.neq("id", 0)` matches "id is
+    not equal to 0", which is true for every real row as long as your
+    primary key is an integer id starting at 1. If your primary key column
+    is named differently (e.g. "uuid"), swap "id" below for that column name.
+    """
+    try:
+        supabase.table(TABLE_NAME).delete().neq("id", 0).execute()
+        print(f"🗑️  Cleared all existing rows from '{TABLE_NAME}'")
+    except Exception as e:
+        print(f"⚠️  Failed to clear table '{TABLE_NAME}': {e}")
+
 
 # ════════════════════════════════════════════════════════════════════════════
 # HELPERS
@@ -882,10 +947,14 @@ async def push_to_db(
 ):
     """
     Optimise + summarise titles via DeepSeek and push to Supabase `content_radar`.
+      - Table is wiped clean FIRST, so this run fully replaces last night's data.
       - National  → exactly `per_bucket` rows, state = "national"
       - Global    → exactly `per_bucket` rows, state = "global"
       - Regional  → exactly `per_bucket` rows PER STATE, state = state name
     """
+    # Wipe the table once, before any new rows go in.
+    clear_supabase_table()
+
     semaphore = asyncio.Semaphore(AI_CONCURRENCY)
 
     # ── National ─────────────────────────────────────────────────────────────
@@ -900,9 +969,6 @@ async def push_to_db(
     # ── Global ───────────────────────────────────────────────────────────────
     if global_csv.exists():
         df_glob = pd.read_csv(global_csv)
-        # global_titles.csv uses "country" column instead of "region"; normalize
-        if "source" not in df_glob.columns and "country" in df_glob.columns:
-            pass  # source column already present from collection step
         glob_titles = pick_top_n_titles(df_glob, n=per_bucket)
         print(f"\n🌍 Global → pushing {len(glob_titles)} titles (target {per_bucket})")
         await _process_bucket(glob_titles, "global", semaphore)
@@ -928,10 +994,18 @@ async def push_to_db(
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# MAIN ENTRY POINT
+# MAIN PIPELINE
 # ════════════════════════════════════════════════════════════════════════════
 
 def run():
+    print(f"\n{'=' * 70}")
+    print(f"🚀 Pipeline run starting — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"{'=' * 70}")
+
+    # 1) Wipe local output folder so nothing from last night lingers and the
+    #    'already exists, skip' shortcuts below don't fire.
+    clear_output_directory()
+
     try:
         df_regional = pd.read_csv("./Regional.csv")
     except FileNotFoundError:
@@ -979,7 +1053,8 @@ def run():
 
     find_common_news(national_csv=national_out, threshold=0.45, top_n=10)
 
-    # ── Push optimized titles + summaries to Supabase ─────────────────────────
+    # 2) Wipe the Supabase table + push fresh optimized titles + summaries.
+    #    (clear_supabase_table() is called inside push_to_db, right before inserts)
     asyncio.run(push_to_db(
         national_csv=national_out,
         regional_csv=regional_out,
@@ -987,8 +1062,43 @@ def run():
         per_bucket=PER_BUCKET_TARGET,
     ))
 
-    print("\n🎉 Done!")
+    print(f"\n🎉 Pipeline run complete — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# SCHEDULER — runs `run()` every night at 00:00 (server local time)
+# ════════════════════════════════════════════════════════════════════════════
+
+def start_scheduler():
+    """
+    Keeps the process alive and fires `run()` every day at 00:00.
+
+    On startup:
+      - If content_radar is currently EMPTY (fresh DB, or someone manually
+        cleared it), run the pipeline once immediately so the table isn't
+        sitting empty until midnight.
+      - If content_radar already has data, DO NOT run immediately — just
+        wait for the next scheduled 00:00 trigger.
+
+    IMPORTANT: the schedule time uses the machine's LOCAL time, not UTC.
+    Make sure the server/container this runs on is set to the timezone you
+    mean by "12 AM" (check with `timedatectl` on Linux).
+    """
+    if is_table_empty():
+        print(f"▶️  '{TABLE_NAME}' is empty — running pipeline once immediately.")
+        run()
+    else:
+        print(f"⏭️  '{TABLE_NAME}' already has data — skipping immediate run, "
+              f"waiting for the 00:00 schedule.")
+
+    schedule.every().day.at("00:00").do(run)
+    print("\n⏰ Scheduler active — pipeline will run every night at 00:00 local time.")
+    print("   (Leave this process running, e.g. inside tmux/screen or as a service.)")
+
+    while True:
+        schedule.run_pending()
+        time.sleep(30)
 
 
 if __name__ == "__main__":
-    run()
+    start_scheduler()

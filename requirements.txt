@@ -10,6 +10,7 @@ python-dotenv
 openai
 deep-translator
 langdetect
+feedparser
 
 
 # Andhra Pradesh,Sakshi,https://www.sakshi.com,h2 news_title
