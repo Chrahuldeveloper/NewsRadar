@@ -30,12 +30,6 @@ TABLE_NAME = "content_radar"
 PER_BUCKET_TARGET = 10   
 AI_CONCURRENCY = 4       
 
-# How old an article is allowed to be before we drop it client-side.
-# NewsAPI's free "Developer" plan doesn't give you same-day articles — it
-# has its own delay ceiling (can be days to weeks). We no longer request a
-# "from" window (that was causing totalResults: 0 since the window fell
-# inside the plan's blackout period). Instead we take whatever NewsAPI
-# hands back sorted by publishedAt, and filter/log freshness ourselves.
 MAX_ARTICLE_AGE_DAYS = 30
 
 NEWSAPI_GLOBAL_SOURCES = (
