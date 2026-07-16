@@ -1,9 +1,0 @@
-Source Name,Source Type,Primary Language,Coverage,url,Selector
-ANI,Wire Service,English,National,https://www.aninews.in/,figcaption.pt-0 h2.title
-The Hindu,Newspaper,English,National,https://www.thehindu.com/,h3.title a
-Indian Express,Newspaper,English,National,https://indianexpress.com/,h2.topblockNews__sidebarTitle a.article-click
-Times of India,Newspaper,English,National,https://timesofindia.indiatimes.com/,div.Kt6Pm.style_change.T5Q6J
-India Today,TV/Digital,English,National,https://www.indiatoday.in/,div.B1S3_content__wrap__9mSB6 h2 a
-The Hindu,Newspaper,English,National,https://www.thehindu.com/,h3.title a
-Economic Times,Business,English,National,https://economictimes.indiatimes.com/,li.storyItem a.newsTitle
-Mint,Business,English,National,https://www.livemint.com/,h3 a[href]

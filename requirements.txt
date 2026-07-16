@@ -1,16 +1,3 @@
-beautifulsoup4
 requests
 python-dotenv
 supabase
-numpy==1.26.4
-google-genai
-pandas
-lxml
-python-dotenv
-openai
-deep-translator
-langdetect
-feedparser
-schedule
-pandas
-scikit-learn
